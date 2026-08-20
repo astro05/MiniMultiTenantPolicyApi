@@ -29,7 +29,7 @@ dotnet run --project src/MiniMultiTenantPolicyApi
 
 ## Tenant Isolation
 
-For this take-home assignment, the current tenant is supplied through the `X-Tenant-Id` request header.
+The current tenant is supplied through the `X-Tenant-Id` request header.
 
 The header is parsed once by `TenantContext` and exposed to application services through `ITenantContext`. Controllers do not directly handle tenant IDs. A missing, empty, non-numeric, or non-positive header produces a clear `400 Bad Request`, and a tenant ID that does not exist in the database is also rejected with `400 Bad Request`.
 
