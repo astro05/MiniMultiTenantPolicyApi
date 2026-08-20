@@ -1,0 +1,36 @@
+@MiniMultiTenantPolicyApi_HostAddress = https://localhost:7243
+
+### Tenant 1 retrieves its own customer policy (200 OK)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/customers/101/policy
+X-Tenant-Id: 1
+
+### Tenant 2 attempts to access Tenant 1's customer policy (404 Not Found)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/customers/101/policy
+X-Tenant-Id: 2
+
+### Tenant 1 policies expiring within 30 days (200 OK)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/policies/expiring?withinDays=30
+X-Tenant-Id: 1
+
+### Tenant 2 policies expiring within 30 days (200 OK)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/policies/expiring?withinDays=30
+X-Tenant-Id: 2
+
+### Bonus: Tenant 1 policy expiration (200 OK)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/policies/1001/expiration
+X-Tenant-Id: 1
+
+### Bonus: Tenant 2 attempts to access Tenant 1's policy (404 Not Found)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/policies/1001/expiration
+X-Tenant-Id: 2
+
+### Missing tenant header (400 Bad Request)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/customers/101/policy
+
+### Invalid tenant header (400 Bad Request)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/customers/101/policy
+X-Tenant-Id: abc
+
+### Unknown tenant (400 Bad Request)
+GET {{MiniMultiTenantPolicyApi_HostAddress}}/api/customers/101/policy
+X-Tenant-Id: 99
