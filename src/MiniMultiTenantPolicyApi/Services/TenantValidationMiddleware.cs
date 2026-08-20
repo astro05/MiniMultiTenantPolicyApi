@@ -20,19 +20,9 @@ public class TenantValidationMiddleware
             return;
         }
 
-        var header = context.Request.Headers[TenantContext.HeaderName].FirstOrDefault();
+        var tenantContext = context.RequestServices.GetRequiredService<ITenantContext>();
 
-        if (string.IsNullOrWhiteSpace(header))
-        {
-            await WriteErrorAsync(context, StatusCodes.Status400BadRequest, "X-Tenant-Id header is required.");
-            return;
-        }
-
-        if (!int.TryParse(header, out var tenantId) || tenantId <= 0)
-        {
-            await WriteErrorAsync(context, StatusCodes.Status400BadRequest, "X-Tenant-Id header must be a positive integer.");
-            return;
-        }
+        var tenantId = tenantContext.TenantId;
 
         var tenantExists = await db.Tenants
             .AsNoTracking()
