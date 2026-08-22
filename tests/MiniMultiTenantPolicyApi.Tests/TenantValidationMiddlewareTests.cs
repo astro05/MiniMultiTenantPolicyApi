@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using MiniMultiTenantPolicyApi.Data;
 using MiniMultiTenantPolicyApi.Services;
@@ -21,7 +22,7 @@ public class TenantValidationMiddlewareTests
             return Task.CompletedTask;
         });
 
-        await Assert.ThrowsAsync<TenantHeaderException>(() => middleware.InvokeAsync(context, db));
+        await Assert.ThrowsAsync<TenantHeaderException>(() => middleware.InvokeAsync(context, CreateCatalog(db)));
 
         Assert.False(nextInvoked);
     }
@@ -44,7 +45,7 @@ public class TenantValidationMiddlewareTests
             return Task.CompletedTask;
         });
 
-        await Assert.ThrowsAsync<TenantHeaderException>(() => middleware.InvokeAsync(context, db));
+        await Assert.ThrowsAsync<TenantHeaderException>(() => middleware.InvokeAsync(context, CreateCatalog(db)));
 
         Assert.False(nextInvoked);
     }
@@ -60,7 +61,7 @@ public class TenantValidationMiddlewareTests
 
         var middleware = new TenantValidationMiddleware(_ => throw new InvalidOperationException("next must not be invoked"));
 
-        await middleware.InvokeAsync(context, db);
+        await middleware.InvokeAsync(context, CreateCatalog(db));
 
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
 
@@ -86,7 +87,7 @@ public class TenantValidationMiddlewareTests
             return Task.CompletedTask;
         });
 
-        await middleware.InvokeAsync(context, db);
+        await middleware.InvokeAsync(context, CreateCatalog(db));
 
         Assert.True(nextInvoked);
     }
@@ -112,5 +113,10 @@ public class TenantValidationMiddlewareTests
         }
 
         return httpContext;
+    }
+
+    private static CachedTenantCatalog CreateCatalog(AppDbContext db)
+    {
+        return new CachedTenantCatalog(db, new MemoryCache(new MemoryCacheOptions()));
     }
 }

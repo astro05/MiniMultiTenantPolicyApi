@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using MiniMultiTenantPolicyApi.Data;
-
 namespace MiniMultiTenantPolicyApi.Services;
 
 public class TenantValidationMiddleware
@@ -12,7 +9,7 @@ public class TenantValidationMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, AppDbContext db)
+    public async Task InvokeAsync(HttpContext context, ITenantCatalog tenantCatalog)
     {
         if (!context.Request.Path.StartsWithSegments("/api"))
         {
@@ -24,9 +21,7 @@ public class TenantValidationMiddleware
 
         var tenantId = tenantContext.TenantId;
 
-        var tenantExists = await db.Tenants
-            .AsNoTracking()
-            .AnyAsync(t => t.Id == tenantId, context.RequestAborted);
+        var tenantExists = await tenantCatalog.TenantExistsAsync(tenantId, context.RequestAborted);
 
         if (!tenantExists)
         {
